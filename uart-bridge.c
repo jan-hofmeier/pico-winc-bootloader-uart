@@ -300,7 +300,7 @@ void init_uart_data(uint8_t itf)
 	uart_set_irq_enables(ui->inst, true, false);
 }
 
-void winc_booloader(void){
+void winc_bootloader(void){
     // Initialize the GPIO pins
     gpio_init(WINC_CHIP_EN_PIN);
     gpio_init(WINC_RESET_N_PIN);
