@@ -11,6 +11,9 @@
 #include <string.h>
 #include <tusb.h>
 
+#define WINC_CHIP_EN_PIN 7
+#define WINC_RESET_N_PIN 6
+
 #if !defined(MIN)
 #define MIN(a, b) ((a > b) ? b : a)
 #endif /* MIN */
@@ -297,9 +300,40 @@ void init_uart_data(uint8_t itf)
 	uart_set_irq_enables(ui->inst, true, false);
 }
 
+void winc_booloader(void){
+    // Initialize the GPIO pins
+    gpio_init(WINC_CHIP_EN_PIN);
+    gpio_init(WINC_RESET_N_PIN);
+    // Set them as outputs
+    gpio_set_dir(WINC_CHIP_EN_PIN, GPIO_OUT);
+    gpio_set_dir(WINC_RESET_N_PIN, GPIO_OUT);
+
+    // --- Start the Boot Sequence ---
+    
+    // 1. Start with both pins LOW
+    gpio_put(WINC_CHIP_EN_PIN, 0);
+    gpio_put(WINC_RESET_N_PIN, 0);
+
+    // 2. Wait for power to be stable. 
+    //    (The WINC is powered by the Pico's 3.3V, so we just wait)
+    sleep_ms(500); 
+
+    // 3. Pull CHIP_EN HIGH
+    printf("Step 2: Setting CHIP_EN to HIGH.\n");
+    gpio_put(WINC_CHIP_EN_PIN, 1);
+
+    // 4. Wait a moment (100ms is a safe value)
+    sleep_ms(100);
+
+    // 5. Pull RESET_N HIGH
+    gpio_put(WINC_RESET_N_PIN, 1);
+}
+
 int main(void)
 {
 	int itf;
+
+	winc_bootloader();
 
 	usbd_serial_init();
 
